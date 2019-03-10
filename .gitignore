@@ -1,0 +1,6 @@
+src/lib
+src/node_modules
+src/.config.json
+src/.sessions.json
+src/.*.backup
+**/.DS_Store
