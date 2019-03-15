@@ -5,6 +5,7 @@
     "private": true,
     "dependencies": {
         "node-red-admin": "^0.1.5",
+        "node-red-contrib-ttn": "^2.0.5",
         "node-red-dashboard": "^2.14.0"
     }
 }
