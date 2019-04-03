@@ -1,4 +1,4 @@
-/*   
+/*
    Connect the RN2xx3 as follows:
    RN2xx3 -- ESP8266
    Uart TX -- GPIO4
@@ -8,6 +8,14 @@
    Gnd -- Gnd
 
 */
+
+const char *appEui = "BE7A000000001158";
+const char *appKey = "441A1EACD8F19470A2AA6D84EC887D21";
+int ledPin = 2;
+int buttonPin = 0;
+
+int psw;
+
 #include <rn2xx3.h>
 #include <SoftwareSerial.h>
 
@@ -21,9 +29,9 @@ rn2xx3 myLora(mySerial);
 
 // the setup routine runs once when you press reset:
 void setup() {
-  // LED pin is GPIO2 which is the ESP8266's built in LED
-  pinMode(2, OUTPUT);
-  led_on();
+  pinMode(ledPin, OUTPUT);
+  pinMode(buttonPin, INPUT_PULLUP);
+  randomSeed(analogRead(0));
 
   // Open serial communications and wait for port to open:
   Serial.begin(9600);
@@ -33,19 +41,21 @@ void setup() {
 
   Serial.println("Startup");
 
-
-
   initialize_radio();
-
-  //transmit a startup message
-  myLora.tx("TTN Mapper on ESP8266 node");
-
-  led_off();
-  delay(2000);
 }
 
-void initialize_radio()
-{
+void loop() {
+  if (digitalRead(buttonPin) == 0) {
+    Serial.println("Button Pressed");
+    psw = sendGeneratePassword();
+    Serial.print("New password: ");
+    Serial.println(psw);
+    delay(500);
+  }
+
+}
+
+void initialize_radio() {
   //reset RN2xx3
   pinMode(RESET, OUTPUT);
   digitalWrite(RESET, LOW);
@@ -55,10 +65,12 @@ void initialize_radio()
   delay(100); //wait for the RN2xx3's startup message
   mySerial.flush();
 
+  //Autobaud the rn2483 module to 9600. The default would otherwise be 57600.
+  myLora.autobaud();
+
   //check communication with radio
   String hweui = myLora.hweui();
-  while (hweui.length() != 16)
-  {
+  while (hweui.length() != 16)  {
     Serial.println("Communication with RN2xx3 unsuccessful. Power cycle the board.");
     Serial.println(hweui);
     delay(10000);
@@ -72,42 +84,47 @@ void initialize_radio()
   Serial.println(myLora.sysver());
 
   //configure your keys and join the network
-  Serial.println("Trying to join TTN");
+  Serial.println("Trying to connect to gateway");
   bool join_result = false;
 
-  //ABP: initABP(String addr, String AppSKey, String NwkSKey);
-  //join_result = myLora.initABP("02017201", "8D7FFEF938589D95AAD928C2E2E7E48F", "AE17E567AECC8787F749A62F5541D522");
-
   //OTAA: initOTAA(String AppEUI, String AppKey);
-  join_result = myLora.initOTAA("BE7A000000001158", "441A1EACD8F19470A2AA6D84EC887D21");
+  join_result = myLora.initOTAA(appEui, appKey);
 
-  while (!join_result)
-  {
-    Serial.println("Unable to join. Are your keys correct, and do you have TTN coverage?");
-    delay(60000); //delay a minute before retry
+  while (!join_result) {
+    Serial.println("Unable to connect");
+    delay(30000); //delay a minute before retry
     join_result = myLora.init();
   }
-  Serial.println("Successfully joined TTN");
-
+  Serial.println("Successfully connected to gateway");
 }
 
-// the loop routine runs over and over again forever:
-void loop() {
-  led_on();
-
-  Serial.println("TXing");
-  myLora.tx("!"); //one byte, blocking function
-
-  led_off();
-  delay(50000);
+void led_on() {
+  digitalWrite(ledPin, 0);
 }
 
-void led_on()
-{
-  digitalWrite(2, 0);
+void led_off() {
+  digitalWrite(ledPin, 1);
 }
 
-void led_off()
-{
-  digitalWrite(2, 1);
+void ledBlink() {
+  digitalWrite(ledPin, 0);
+  delay(100);
+  digitalWrite(ledPin, 1);
+  delay(100);
+  digitalWrite(ledPin, 0);
+  delay(100);
+  digitalWrite(ledPin, 1);
+  delay(100);
+  digitalWrite(ledPin, 0);
+  delay(100);
+  digitalWrite(ledPin, 1);
+}
+
+int sendGeneratePassword() {
+  int newpsw;
+  newpsw = random(1000, 9999);
+  ledBlink();
+  myLora.tx(String(newpsw));
+
+  return newpsw;
 }
