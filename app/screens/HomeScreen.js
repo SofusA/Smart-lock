@@ -41,7 +41,7 @@ export default class HomeScreen extends React.Component {
 
           <View>
             <Button
-                onPress={this._handleGetKey}
+                onPress={this.getKey}
                 title="Get key"
                 color="#841584"
                 accessibilityLabel="Learn more about this purple button"
@@ -99,8 +99,22 @@ export default class HomeScreen extends React.Component {
 
   _handleGetKey = () => {
     this.setState({ new_key: new Date().getMilliseconds() });
+  };
+  getKey = () => {
+    var new_k;
+    fetch("http://127.0.0.1:1880/key")
+        .then((response) => {
+          console.log("BODY: " + response._bodyInit);
+          return response.json();})
+        .then((responseJSON) => {
+          console.log("JSON: " + responseJSON["key"]);
+          new_k = responseJSON["key"];
+          this.setState({ new_key: new_k})
+        })
   }
+
 }
+
 
 const styles = StyleSheet.create({
   container: {
