@@ -5,4 +5,4 @@ src/.sessions.json
 src/.*.backup
 **/.DS_Store
 exercises/
-
+.vscode
