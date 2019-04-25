@@ -6,3 +6,5 @@ src/.*.backup
 **/.DS_Store
 exercises/
 .vscode
+
+node_modules
