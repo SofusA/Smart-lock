@@ -38,23 +38,18 @@
             <div class="col-6 mx-auto">
                 <div class="jumbotron">
                     <div class="card">
-                        <div class="card-body px-lg-5 pt-0">
-                            <button id="connect" type="button" aria-label="Connect">
-                                <i class="material-icons">bluetooth_connected</i>
-                            </button>
-
-                            <button id="disconnect" type="button" aria-label="Disconnect">
-                                <i class="material-icons">bluetooth_disabled</i>
-                            </button>
-
+                        <div class="card-body px-lg-5 pt-3">
                             <h2>Gnarly boxington</h2>
-                            <form id="send-form" class="md-form">
+                            <form id="send-form" class="md-form hide">
                                 <input type="password" id="input" class="form-control" placeholder="Password">
                                 
                                 <input id="input-button" class="btn btn-primary btn-rounded btn-block my-4"
                                 type="submit" value="Unlock">
 
                             </form>
+
+                            <input id="connect" type="button" aria-label="Connect" class="btn btn-primary btn-rounded btn-block my-4" value="Connect">
+                            
                         </div>
                     </div>
                 </div>

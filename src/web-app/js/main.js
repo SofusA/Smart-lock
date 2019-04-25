@@ -7,6 +7,8 @@ const sendForm = document.getElementById('send-form');
 const inputField = document.getElementById('input');
 const inputButton = document.getElementById('input-button');
 
+const unlockUrl = '../unlock';
+
 // Helpers.
 const defaultDeviceName = 'Terminal';
 const terminalAutoScrollingLimit = terminalContainer.offsetHeight / 2;
@@ -80,8 +82,8 @@ const send = (data) => {
 connectButton.addEventListener('click', () => {
   terminal.connect().
     then(() => {
-      // deviceNameLabel.textContent = terminal.getDeviceName() ?
-      //     terminal.getDeviceName() : defaultDeviceName;
+      sendForm.classList.remove('hide');
+      connectButton.classList.add('hide');
     });
 });
 
@@ -93,7 +95,11 @@ connectButton.addEventListener('click', () => {
 sendForm.addEventListener('submit', (event) => {
   event.preventDefault();
 
-  send(inputField.value);
+  fetch(unlockUrl + '?smartlockID=' + inputField.value)
+  .then(data=>{return data.json()})
+  .then(res=>send(res))
+
+  // send(inputField.value);
 
   inputField.value = '';
   inputField.focus();
