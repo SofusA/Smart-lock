@@ -3,18 +3,19 @@
    RN2xx3 -- ESP8266
    Uart TX -- D2
    Uart RX -- D1
-   Reset -- D8
+   Reset -- D4
    Vcc -- 3.3V
    Gnd -- Gnd
 
    Connect Bluetooth:
-   RX -- D4
-   TX -- D3
+   RX -- D6
+   TX -- D5
 */
-
 
 int ledPin = 2; //built in LED
 int buttonPin = 0; // Build in button
+
+String btMessage;
 
 int psw; // Password int
 
@@ -23,25 +24,18 @@ int psw; // Password int
 
 // RN2483 stuff
 SoftwareSerial RN2483Serial(D2, D1); // RX, TX !! labels on relay board is swapped !!
-#define RESET D8
+#define RESET D4
 rn2xx3 myLora(RN2483Serial);
 const char *appEui = "BE7A000000001158";
 const char *appKey = "441A1EACD8F19470A2AA6D84EC887D21";
 
 // Bluetooth stuff
-SoftwareSerial BTserial(D6, D5); // RX, TX
+SoftwareSerial BTserial(D5, D6);
 
 void setup() {
   pinMode(ledPin, OUTPUT);
   pinMode(buttonPin, INPUT_PULLUP);
   randomSeed(analogRead(0));
-
-  // Open serial communications and wait for port to open:
-  Serial.begin(9600);
-  RN2483Serial.begin(57600);
-  BTserial.begin(9600);
-
-  delay(5000); //wait for the arduino ide's serial console to open
 
   initialize_radio();
 }
@@ -55,9 +49,33 @@ void loop() {
     delay(500);
   }
 
+  if (BTserial.available()) {
+    btMessage = BTserial.readString();
+    Serial.print(btMessage);
+    Serial.println(String(psw));
+
+    if (btMessage.toInt() == psw) {
+      BTserial.println("Unlocked");
+      sendGeneratePassword();
+    } else {
+      BTserial.println("Incorrect password");
+    }
+  }
+
+  if (Serial.available()) {
+    BTserial.write(Serial.read());
+  }
 }
 
+
 void initialize_radio() {
+  // Open serial communications and wait for port to open:
+  Serial.begin(9600);
+  RN2483Serial.begin(57600);
+  BTserial.begin(9600);
+
+  delay(5000); //wait for the arduino ide's serial console to open
+
   //reset RN2xx3
   pinMode(RESET, OUTPUT);
   digitalWrite(RESET, LOW);
@@ -94,10 +112,11 @@ void initialize_radio() {
 
   while (!join_result) {
     Serial.println("Unable to connect");
-    delay(30000); //delay a minute before retry
+    delay(10000); //delay a minute before retry
     join_result = myLora.init();
   }
   Serial.println("Successfully connected to gateway");
+  sendGeneratePassword();
 }
 
 void led_on() {
