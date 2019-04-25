@@ -52,11 +52,13 @@ void loop() {
   if (BTserial.available()) {
     btMessage = BTserial.readString();
     Serial.print(btMessage);
-    Serial.println(String(psw));
 
-    if (btMessage.toInt() == psw) {
+    if (btMessage.startsWith("OK+")) {
+      return;
+    } else if (btMessage.toInt() == psw) {
       BTserial.println("Unlocked");
-      sendGeneratePassword();
+      psw = sendGeneratePassword();
+      BTserial.println("Generated new psw");
     } else {
       BTserial.println("Incorrect password");
     }
@@ -116,7 +118,7 @@ void initialize_radio() {
     join_result = myLora.init();
   }
   Serial.println("Successfully connected to gateway");
-  sendGeneratePassword();
+  psw = sendGeneratePassword();
 }
 
 void led_on() {
