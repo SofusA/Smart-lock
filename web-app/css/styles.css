@@ -1,0 +1,61 @@
+*:focus {
+  outline: none; }
+
+html, body, .app {
+  height: 100%;
+  max-height: 100%;
+  min-height: 100%; }
+
+body {
+  background: #ffffff;
+  color: rgba(0, 0, 0, 0.87);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 16px;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
+
+.app {
+  display: none;
+  flex-direction: column; }
+
+button {
+  background: none;
+  border: none;
+  color: rgba(0, 0, 0, 0.87);
+  cursor: pointer;
+  margin: 0;
+  padding: 12px;
+  transition: background 0.3s, color 0.3s;
+  user-select: none; }
+  button:active {
+    background: rgba(0, 0, 0, 0.12);
+    color: rgba(0, 0, 0, 0.54); }
+  button i.material-icons {
+    vertical-align: middle; }
+
+.toolbar {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0; }
+  .toolbar .name {
+    flex-grow: 1;
+    padding: 0 8px;
+    user-select: none; }
+  .toolbar .buttons {
+    flex-shrink: 0; }
+    .toolbar .buttons button {
+      float: left; }
+
+
+.send-form {
+  position:absolute;
+  bottom:0;
+}
+  .send-form input {
+    background: none;
+    border: none;
+    color: rgba(0, 0, 0, 0.87);
+    flex-grow: 1;
+
+    padding: 0 8px; }
+    .send-form input::placeholder {
+      color: rgba(0, 0, 0, 0.54); }
