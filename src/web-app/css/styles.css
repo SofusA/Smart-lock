@@ -6,24 +6,35 @@
 }
 
 html, body, .app {
-  height: 100%;
-  max-height: 100%;
-  min-height: 100%; }
-
+  margin: 0 auto;
+  padding: 0;
+  max-width: 600px;
+  text-align: center;
+}
 body {
   background: #ffffff;
   color: rgba(0, 0, 0, 0.87);
   font-family: 'Roboto Mono', monospace;
   font-size: 16px;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0); }
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
 
 .app {
   /* display: none; */
-  flex-direction: column; }
+  flex-direction: column;
+}
 
 .btn {
   font-size: 10px!important;
 }
+
+.main-box{
+  width: 100%;
+  width: 100%;
+  display: table;
+  top:0;
+}
+
 
 button {
   background: none;
@@ -31,7 +42,7 @@ button {
   color: rgba(0, 0, 0, 0.87);
   cursor: pointer;
   margin: 0;
-  padding: 12px;
+  padding: 1%;
   transition: background 0.3s, color 0.3s;
   user-select: none; }
   button:active {
@@ -57,13 +68,15 @@ button {
 .send-form {
   position:absolute;
   bottom:0;
+  height: 100%;
 }
-  .send-form input {
-    background: none;
-    border: none;
-    color: rgba(0, 0, 0, 0.87);
-    flex-grow: 1;
+.send-form input {
+  background: none;
+  border: none;
+  color: rgba(0, 0, 0, 0.87);
+  flex-grow: 1;
 
-    padding: 0 8px; }
-    .send-form input::placeholder {
-      color: rgba(0, 0, 0, 0.54); }
+  padding: 0 8px; }
+  .send-form input::placeholder {
+    color: rgba(0, 0, 0, 0.54);
+  }
