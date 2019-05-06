@@ -12,42 +12,44 @@
    TX -- D5
 */
 
-int ledPin = 2; //built in LED
-int buttonPin = 0; // Build in button
+int lockPin = D7; //Unlock relay
 
-String btMessage;
+String btMessage; //For storing last BT message
 
 int psw; // Password int
 
+// RN2483 stuff
 #include <rn2xx3.h>
 #include <SoftwareSerial.h>
 
-// RN2483 stuff
 SoftwareSerial RN2483Serial(D2, D1); // RX, TX !! labels on relay board is swapped !!
 #define RESET D4
 rn2xx3 myLora(RN2483Serial);
 const char *appEui = "BE7A000000001158";
+//const char *appKey = "6F32DC311799944F3ED1164A20371695";
 const char *appKey = "441A1EACD8F19470A2AA6D84EC887D21";
 
 // Bluetooth stuff
 SoftwareSerial BTserial(D5, D6);
 
 void setup() {
-  pinMode(ledPin, OUTPUT);
-  pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(lockPin, OUTPUT);
+  pinMode(RESET, OUTPUT);
+  digitalWrite(lockPin, 1);
+
   randomSeed(analogRead(0));
 
   initialize_radio();
 }
 
 void loop() {
-  if (digitalRead(buttonPin) == 0) {
-    Serial.println("Button Pressed");
-    psw = sendGeneratePassword();
-    Serial.print("New password: ");
-    Serial.println(psw);
-    delay(500);
-  }
+  //  if (digitalRead(buttonPin) == 0) {
+  //    Serial.println("Button Pressed");
+  //    psw = sendGeneratePassword();
+  //    Serial.print("New password: ");
+  //    Serial.println(psw);
+  //    delay(500);
+  //  }
 
   if (BTserial.available()) {
     btMessage = BTserial.readString();
@@ -57,21 +59,19 @@ void loop() {
       return;
     } else if (btMessage.toInt() == psw) {
       BTserial.println("Unlocked");
+      digitalWrite(lockPin, 0);
       psw = sendGeneratePassword();
+      delay(10000);
       BTserial.println("Generated new psw");
+      digitalWrite(lockPin, 1);
     } else {
       BTserial.println("Incorrect password");
     }
-  }
-
-  if (Serial.available()) {
-    BTserial.write(Serial.read());
   }
 }
 
 
 void initialize_radio() {
-  // Open serial communications and wait for port to open:
   Serial.begin(9600);
   RN2483Serial.begin(57600);
   BTserial.begin(9600);
@@ -79,7 +79,6 @@ void initialize_radio() {
   delay(5000); //wait for the arduino ide's serial console to open
 
   //reset RN2xx3
-  pinMode(RESET, OUTPUT);
   digitalWrite(RESET, LOW);
   delay(100);
   digitalWrite(RESET, HIGH);
@@ -112,42 +111,27 @@ void initialize_radio() {
   //OTAA: initOTAA(String AppEUI, String AppKey);
   join_result = myLora.initOTAA(appEui, appKey);
 
-  while (!join_result) {
-    Serial.println("Unable to connect");
-    delay(10000); //delay a minute before retry
-    join_result = myLora.init();
-  }
+  //  while (!join_result) {
+  //    Serial.println("Unable to connect");
+  //    delay(10000); //delay a minute before retry
+  //    join_result = myLora.init();
+  //  }
+
   Serial.println("Successfully connected to gateway");
+
   psw = sendGeneratePassword();
-}
-
-void led_on() {
-  digitalWrite(ledPin, 0);
-}
-
-void led_off() {
-  digitalWrite(ledPin, 1);
-}
-
-void ledBlink() {
-  digitalWrite(ledPin, 0);
-  delay(100);
-  digitalWrite(ledPin, 1);
-  delay(100);
-  digitalWrite(ledPin, 0);
-  delay(100);
-  digitalWrite(ledPin, 1);
-  delay(100);
-  digitalWrite(ledPin, 0);
-  delay(100);
-  digitalWrite(ledPin, 1);
 }
 
 int sendGeneratePassword() {
   int newpsw;
   newpsw = random(1000, 9999);
-  ledBlink();
-  myLora.tx(String(newpsw));
+  //  myLora.tx(String(newpsw));
+
+  Serial.print("New password: ");
+  Serial.println(newpsw);
+  
+  BTserial.print("New password: ");
+  BTserial.println(newpsw);
 
   return newpsw;
 }
