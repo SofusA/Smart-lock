@@ -22,116 +22,102 @@ int psw; // Password int
 #include <rn2xx3.h>
 #include <SoftwareSerial.h>
 
-SoftwareSerial RN2483Serial(D2, D1); // RX, TX !! labels on relay board is swapped !!
-#define RESET D4
-rn2xx3 myLora(RN2483Serial);
-const char *appEui = "BE7A000000001158";
+SoftwareSerial RN2483Serial(D2, D1); // Initialise serial with RN2483
+#define RESET D4 // Reset on RN2483 
+rn2xx3 myLora(RN2483Serial); // Define lora object for rn2xx3 library
+const char *appEui = "BE7A000000001158"; //appEui for lora network
 //const char *appKey = "6F32DC311799944F3ED1164A20371695";
-const char *appKey = "441A1EACD8F19470A2AA6D84EC887D21";
+const char *appKey = "441A1EACD8F19470A2AA6D84EC887D21"; //appKey for lora network
 
 // Bluetooth stuff
-SoftwareSerial BTserial(D5, D6);
+SoftwareSerial BTserial(D5, D6); // Initialise serial with HM-10o
 
 void setup() {
   pinMode(lockPin, OUTPUT);
   pinMode(RESET, OUTPUT);
   digitalWrite(lockPin, 1);
 
-  randomSeed(analogRead(0));
+  randomSeed(analogRead(0)); // Generate random seed based on random input from analog pin
 
   initialize_radio();
 }
 
 void loop() {
-  //  if (digitalRead(buttonPin) == 0) {
-  //    Serial.println("Button Pressed");
-  //    psw = sendGeneratePassword();
-  //    Serial.print("New password: ");
-  //    Serial.println(psw);
-  //    delay(500);
-  //  }
+  if (BTserial.available()) { // If incoming message do:
+    btMessage = BTserial.readString(); // Save message
+    Serial.print(btMessage);  // Print the message
 
-  if (BTserial.available()) {
-    btMessage = BTserial.readString();
-    Serial.print(btMessage);
-
-    if (btMessage.startsWith("OK+")) {
+    if (btMessage.startsWith("OK+")) { // Ignore messages from HM-10, we are only interessted in messages from user
       return;
-    } else if (btMessage.toInt() == psw) {
-      BTserial.println("Unlocked");
-      digitalWrite(lockPin, 0);
-      psw = sendGeneratePassword();
-      delay(10000);
-      BTserial.println("Generated new psw");
-      digitalWrite(lockPin, 1);
+    } else if (btMessage.toInt() == psw) { // If message matches psw do:
+      BTserial.println("Unlocked"); // Send "Unlocked" back to the user
+      digitalWrite(lockPin, 0);     // Unlock
+      psw = sendGeneratePassword(); // Send PSW to server and generate new psw
+      delay(10000);                 // Wait to allow user to open box
+      BTserial.println("Generated new psw");  // Send confirmation to user
+      digitalWrite(lockPin, 1);     // Lock device
     } else {
-      BTserial.println("Incorrect password");
+      BTserial.println("Incorrect password"); // Send incorrect password if psw did not match
     }
   }
 }
 
 
 void initialize_radio() {
-  Serial.begin(9600);
-  RN2483Serial.begin(57600);
-  BTserial.begin(9600);
-
-  delay(5000); //wait for the arduino ide's serial console to open
+  Serial.begin(9600);       // Begin serial with Arduino IDE, if connected to computer
+  RN2483Serial.begin(57600);// Begin serial with Lora module
+  BTserial.begin(9600);     // Begin serial with bluetooth module
 
   //reset RN2xx3
-  digitalWrite(RESET, LOW);
+  digitalWrite(RESET, LOW); // Reset Lora. Note that NodeMCU has inverted output compared to UNO
   delay(100);
   digitalWrite(RESET, HIGH);
 
   delay(100); //wait for the RN2xx3's startup message
   RN2483Serial.flush();
+  myLora.autobaud(); // Autobaud the rn2483 module to 9600. The default would otherwise be 57600.
 
-  // Autobaud the rn2483 module to 9600. The default would otherwise be 57600.
-  myLora.autobaud();
 
   //check communication with radio
-  String hweui = myLora.hweui();
-  while (hweui.length() != 16)  {
+  String hweui = myLora.hweui(); // Store hardware EUI
+  while (hweui.length() != 16)  { // Attempt communication with Lora Module
     Serial.println("Communication with RN2xx3 unsuccessful. Power cycle the board.");
     Serial.println(hweui);
     delay(10000);
     hweui = myLora.hweui();
   }
 
-  //print out the HWEUI so that we can register it via ttnctl
+  // print out the HWEUItl
   Serial.println("When using OTAA, register this DevEUI: ");
   Serial.println(hweui);
   Serial.println("RN2xx3 firmware version:");
   Serial.println(myLora.sysver());
 
-  //configure your keys and join the network
+
   Serial.println("Trying to connect to gateway");
   bool join_result = false;
 
   //OTAA: initOTAA(String AppEUI, String AppKey);
-  join_result = myLora.initOTAA(appEui, appKey);
+  join_result = myLora.initOTAA(appEui, appKey);   // Join the network
 
-  //  while (!join_result) {
-  //    Serial.println("Unable to connect");
-  //    delay(10000); //delay a minute before retry
-  //    join_result = myLora.init();
-  //  }
+  while (!join_result) { // Try again if failed
+    Serial.println("Unable to connect");
+    delay(10000); //delay a minute before retry
+    join_result = myLora.init();
+  }
 
   Serial.println("Successfully connected to gateway");
 
-  psw = sendGeneratePassword();
+  psw = sendGeneratePassword(); // generate and send a PSW to the server
 }
 
-int sendGeneratePassword() {
+int sendGeneratePassword() { // generate and send a PSW to the server
   int newpsw;
-  newpsw = random(1000, 9999);
-  //  myLora.tx(String(newpsw));
+  newpsw = random(1000, 9999); // Genreate psw
+  myLora.tx(String(newpsw));   // Send it with lora
 
-  Serial.print("New password: ");
-  Serial.println(newpsw);
-  
-  BTserial.print("New password: ");
-  BTserial.println(newpsw);
+//  Serial.print("New password: ");
+//  Serial.println(newpsw);
 
-  return newpsw;
+  return newpsw; // Return the generated psw
 }
