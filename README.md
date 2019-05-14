@@ -32,7 +32,10 @@ Password: `gnarlicious`
 # Explanation
 This section is meant for our supervisors and interested readers.
 
-psw and pass has to be explained here. 
+The system uses two different passwords:
+Hidden password, `psw` is hidden from the user, and only exposed to the systems components. `psw` is one time use only, and will be renewed by the device and uploaded to the node-RED server after each use.
+
+Public password is set by the owner of the lock, and shared to the user. When the user inputs the public password into the web-app, the web-app forwards this to the node-RED server, which either responds with the correct `psw` or returns the same password as submitted. Afterwards, the web-app forwards the respond to the device with Bluetooth.
 
 ## Device code
 ### Physical explanation
