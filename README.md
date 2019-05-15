@@ -1,7 +1,7 @@
 # Smart-lock
 IoT project for course at Technical University of Denmark, 34346 Networking technologies and application development for Internet of Things (IoT).
 
-The system consist of 4 different blocks:¨
+The system consist of 4 different blocks:
 * Arduino code for NodeMCU
 * Node-RED server, run with Docker
 * End-user access point for unlocking, only supports Google Chrome
