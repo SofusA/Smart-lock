@@ -11,7 +11,7 @@ The system consist of 4 different blocks:¨
 ### Device
 The physical device has to be made, and the Arduino code has to be uploaded to the device. Schematics can be seen below. The HM-10 has to be setup with auto sleep, by sending `AT+PWRM0` with serial.
 
-FRITZIIIIINGGGG
+![alt text](/img/fritzing.png)
 
 ### Node-RED server
 The server is initialised locally by executing the following command. Note that this is only tested with macOS and Linux systems
@@ -69,7 +69,7 @@ The back-end is modified [Web Bluetooth Terminal](https://github.com/loginov-roc
 The web-app serves the purpose of allowing the user to connect to the device, input public password and receive feedback from the device.
 The code can be found in `/src/web-app`. Important files are `/src/web-app/index.html`, which is the user interface, built with [Bootstrap](getbootstrap.com), and `/src/web-app/js/main.js` which is the modified main script from Web Bluetooth Terminal.
 
-The two files is programmed to change the colour and text of the button on the site, indicating correct and incorrect passwords. This handled with `terminal.receive()` in ?`main.js`.
+The two files is programmed to change the colour and text of the button on the site, indicating correct and incorrect passwords. This handled with `terminal.receive()` in `main.js`.
 
 When the user inputs a password in on the web-app and submits, the program fetches the hidden password, with the inputted password from the Unlock API, and sends the hidden password to the device with bluetooth. This is handled with `sendForm.addEventListener()` in `main.js`.
 
